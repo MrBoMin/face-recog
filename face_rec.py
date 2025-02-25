@@ -18,9 +18,9 @@ import os
 
 
 # Connect to Redis Client
-hostname = 'redis-18184.c11.us-east-1-2.ec2.redns.redis-cloud.com'
-portnumber = 18184
-password = '1KQWjPR6PgkXXFfTIgh4UnA1yLz8yOyo'
+hostname = 'redis-17339.c89.us-east-1-3.ec2.redns.redis-cloud.com'
+portnumber = 17339
+password = 'bZchykStnPj7x1RIQzpVpKjQWqAsvV5H'
 
 r = redis.StrictRedis(host=hostname,
                       port=portnumber,
@@ -70,7 +70,7 @@ def ml_search_algorithm(dataframe, feature_column, test_vector,
         argmax = data_filter['cosine'].argmax()
         person_name, person_role, person_batch = data_filter.loc[argmax][name_role]
 
-        
+
     else:
         person_name = 'Unknown'
         person_role = 'Unknown'
@@ -147,7 +147,7 @@ class RegistrationForm:
         self.sample = 0
     def reset(self):
         self.sample = 0
-        
+
     def get_embedding(self,frame):
         # get results from insightface model
         results = faceapp.get(frame,max_num=1)
@@ -159,12 +159,12 @@ class RegistrationForm:
             # put text samples info
             text = f"samples = {self.sample}"
             cv2.putText(frame,text,(x1,y1),cv2.FONT_HERSHEY_DUPLEX,0.6,(255,255,0),2)
-            
+
             # facial features
             embeddings = res['embedding']
-            
+
         return frame, embeddings
-    
+
     def save_data_in_redis_db(self,name,role,batch):
         # validation name
         if name is not None:
@@ -174,31 +174,31 @@ class RegistrationForm:
                 return 'name_false'
         else:
             return 'name_false'
-        
+
         # if face_embedding.txt exists
         if 'face_embedding.txt' not in os.listdir():
             return 'file_false'
-        
-        
+
+
         # step-1: load "face_embedding.txt"
-        x_array = np.loadtxt('face_embedding.txt',dtype=np.float32) # flatten array            
-        
+        x_array = np.loadtxt('face_embedding.txt',dtype=np.float32) # flatten array
+
         # step-2: convert into array (proper shape)
         received_samples = int(x_array.size/512)
         x_array = x_array.reshape(received_samples,512)
-        x_array = np.asarray(x_array)       
-        
+        x_array = np.asarray(x_array)
+
         # step-3: cal. mean embeddings
         x_mean = x_array.mean(axis=0)
         x_mean = x_mean.astype(np.float32)
         x_mean_bytes = x_mean.tobytes()
-        
+
         # step-4: save this into redis database
         # redis hashes
         r.hset(name='info:myanmar',key=key,value=x_mean_bytes)
-        
-        # 
+
+        #
         os.remove('face_embedding.txt')
         self.reset()
-        
+
         return True
